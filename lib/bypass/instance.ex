@@ -27,7 +27,7 @@ defmodule Bypass.Instance do
 
   def init([opts]) do
     # Get a free port from the OS
-    case :ranch_ssl.listen(ip: @listen_ip, port: Keyword.get(opts, :port, 0), sni_fun: fn(host) -> [] end) do
+    case :ranch_ssl.listen(ip: @listen_ip, port: Keyword.get(opts, :port, 0), cert: Keyword.get(opts, :cert, 0)) do
       {:ok, socket} ->
         {:ok, port} = :inet.port(socket)
         :erlang.port_close(socket)
