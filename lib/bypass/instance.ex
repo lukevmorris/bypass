@@ -266,7 +266,7 @@ defmodule Bypass.Instance do
 
   defp do_up(port, cert, ref) do
     plug_opts = [self()]
-    {:ok, socket} = :ranch_ssl.listen(ip: @listen_ip, port: port, cert: cert)
+    {:ok, {:sslsocket, nil, {socket, _}}} = :ranch_ssl.listen(ip: @listen_ip, port: port, cert: cert)
     cowboy_opts = [ref: ref, acceptors: 5, port: port, socket: socket]
     {:ok, _pid} = Plug.Adapters.Cowboy.http(Bypass.Plug, plug_opts, cowboy_opts)
     socket
