@@ -20,7 +20,9 @@ defmodule Bypass do
   handled and set expectations on the calls.
   """
   def open(opts \\ []) do
-    IO.puts(inspect opts)
+    opts
+    |> inspect
+    |> debug_log
     case Supervisor.start_child(Bypass.Supervisor, [opts]) do
       {:ok, pid} ->
         port = Bypass.Instance.call(pid, :port)
