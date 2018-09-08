@@ -27,17 +27,19 @@ defmodule Bypass.Instance do
 
   def init([opts]) do
     # Get a free port from the OS
-    case :ranch_ssl.listen(ip: @listen_ip, port: Keyword.get(opts, :port, 0), cert: Keyword.get(opts, :cert, 0)) do
+    cert = Keyword.get(opts, :cert, 0)
+    case :ranch_ssl.listen(ip: @listen_ip, port: Keyword.get(opts, :port, 0), cert: cert) do
       {:ok, {:sslsocket, nil, {socket, _}}} ->
         {:ok, port} = :inet.port(socket)
         :erlang.port_close(socket)
 
         ref = make_ref()
-        socket = do_up(port, ref)
+        socket = do_up(port, cert, ref)
 
         state = %{
           expectations: %{},
           port: port,
+          cert: cert,
           ref: ref,
           socket: socket,
           callers_awaiting_down: [],
@@ -81,8 +83,8 @@ defmodule Bypass.Instance do
     {:reply, port, state}
   end
 
-  defp do_handle_call(:up, _from, %{port: port, ref: ref, socket: nil} = state) do
-    socket = do_up(port, ref)
+  defp do_handle_call(:up, _from, %{port: port, ref: ref, cert: cert, socket: nil} = state) do
+    socket = do_up(port, cert, ref)
     {:reply, :ok, %{state | socket: socket}}
   end
   defp do_handle_call(:up, _from, state) do
@@ -262,9 +264,9 @@ defmodule Bypass.Instance do
     {route, Map.get(expectations, route)}
   end
 
-  defp do_up(port, ref) do
+  defp do_up(port, cert, ref) do
     plug_opts = [self()]
-    {:ok, socket} = :ranch_ssl.listen(ip: @listen_ip, port: port)
+    {:ok, socket} = :ranch_ssl.listen(ip: @listen_ip, port: port, cert: cert)
     cowboy_opts = [ref: ref, acceptors: 5, port: port, socket: socket]
     {:ok, _pid} = Plug.Adapters.Cowboy.http(Bypass.Plug, plug_opts, cowboy_opts)
     socket
