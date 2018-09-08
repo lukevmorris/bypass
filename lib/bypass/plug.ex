@@ -2,6 +2,7 @@ defmodule Bypass.Plug do
   def init([pid]), do: pid
 
   def call(%{method: method, request_path: request_path} = conn, pid) do
+    IO.puts("YO AM I HERE?")
     route = Bypass.Instance.call(pid, {:get_route, method, request_path})
     ref = make_ref()
     case Bypass.Instance.call(pid, {:get_expect_fun, route}) do
