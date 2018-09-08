@@ -26,11 +26,9 @@ defmodule Bypass.Instance do
   # GenServer callbacks
 
   def init([opts]) do
-    IO.puts("in init with opts")
-    opts |> inspect |> IO.puts
     # Get a free port from the OS
     case :ranch_ssl.listen(ip: @listen_ip, port: Keyword.get(opts, :port, 0), cert: Keyword.get(opts, :cert, 0)) do
-      {:ok, socket} ->
+      {:ok, {:sslsocket, nil, {socket, _}}} ->
         {:ok, port} = :inet.port(socket)
         :erlang.port_close(socket)
 
