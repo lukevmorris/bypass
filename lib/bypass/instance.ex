@@ -272,7 +272,7 @@ defmodule Bypass.Instance do
     socket
   end
 
-  defp do_down(ref, socket) do
+  defp do_down(ref, {:sslsocket, nil, {socket, _}}) do
     :ok = Plug.Adapters.Cowboy.shutdown(ref)
 
     # `port_close` is synchronous, so after it has returned we _know_ that the socket has been
